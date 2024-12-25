@@ -1,19 +1,39 @@
 {
+  "browser": {
+    "fs": false,
+    "path": false,
+    "os": false
+  },
   "name": "yt-dialog",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@craco/craco": "^7.1.0",
+    "assert": "^2.1.0",
+    "axios": "^1.7.9",
+    "browserify-fs": "^1.0.0",
     "cra-template": "1.2.0",
     "framer-motion": "^11.15.0",
+    "google-spreadsheet": "^4.1.4",
+    "googleapis": "^144.0.0",
     "lucide-react": "^0.469.0",
+    "net-browserify": "^0.2.4",
+    "querystring-es3": "^0.2.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-scripts": "5.0.1"
+    "react-scripts": "5.0.1",
+    "stream": "^0.0.3",
+    "stream-http": "^3.2.0",
+    "tls-browserify": "^0.2.2",
+    "url": "^0.11.4",
+    "util": "^0.12.5",
+    "vm-browserify": "^1.1.2",
+    "zlib": "^1.0.5"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
+    "start": "craco start",
+    "build": "craco build",
+    "test": "craco test",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -35,9 +55,19 @@
     ]
   },
   "devDependencies": {
+    "@gradio/client": "^1.8.0",
     "@types/node": "^22.10.2",
     "@types/react": "^19.0.2",
     "@types/react-dom": "^19.0.2",
+    "browserify-zlib": "^0.2.0",
+    "buffer": "^6.0.3",
+    "crypto-browserify": "^3.12.1",
+    "https-browserify": "^1.0.0",
+    "os-browserify": "^0.3.0",
+    "path-browserify": "^1.0.1",
+    "process": "^0.11.10",
+    "react-app-rewired": "^2.2.1",
+    "stream-browserify": "^3.0.0",
     "tailwindcss": "^3.4.17",
     "typescript": "^4.9.5"
   }

@@ -2,35 +2,27 @@ import { UserIcon, MessageCircle, Dot, Minus, Ellipsis } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface Message {
-  id: string;
-  avatarUrl: string | null;
-  username: string;
   text: string;
-  upvotes: number;
-  date: string;
 }
 
-interface MessageProps {
-  message: Message;
-}
-
-const MessageCard = ({ message }: MessageProps) => {
+let username = 'skl`apa';
+const MessageCard = ({ text }: Message) => {
   const [randomDay, setRandomDay] = useState(5);
   const [randomLikes, setrandomLikes] = useState(198);
   useEffect(() => {
-    setRandomDay(Math.floor(Math.random() * 30) + 2);
+    setRandomDay(Math.floor(Math.random() * 28) + 2);
 
     setrandomLikes(Math.floor(Math.random() * (10000 - 50 + 1)) + 50);
   }, []);
 
   return (
-    <div className="flex flex-col items-start space-x-4 relative dark:bg-black ">
+    <div className="flex flex-col items-start space-x-4 relative dark:bg-black max-w-[650px]">
       {/* Аватар */}
       <div className="flex gap-4 flex-shrink-0">
-        {message.avatarUrl ? (
+        {!text ? (
           <img
-            src={message.avatarUrl}
-            alt={`${message.username}'s avatar`}
+            src="https://www.google.com/url?sa=i&url=https%3A%2F%2Fmazda-brochures.com%2Fmain%2Fmazdamx5%2F2024%2F1%2Fen-gb%2Fcolours-rf.html&psig=AOvVaw0IQvycw5G67yceY8ceWHoM&ust=1735244223919000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCIjds8_ew4oDFQAAAAAdAAAAABAE"
+            alt={`${username}'s avatar`}
             className="w-10 h-10 rounded-full"
           />
         ) : (
@@ -40,7 +32,7 @@ const MessageCard = ({ message }: MessageProps) => {
         )}
         <div className="h-[12px] w-5 dark:bg-black bg-gray-100 absolute top-10 left-[12px]"></div>
         <div className="flex items-center justify-between ">
-          <h4 className="font-medium text-gray-900 dark:text-gray-300">{message.username}</h4>
+          <h4 className="font-medium text-gray-900 dark:text-gray-300">{username}</h4>
           <Dot color="gray" height={10} width={10} className="mt-[5px] mx-[2px]" />
           <span className="text-gray-500 text-sm mt-[2px] dark:text-gray-300">
             {randomDay} days ago
@@ -51,8 +43,8 @@ const MessageCard = ({ message }: MessageProps) => {
 
       {/* Контент сообщения */}
       <div className="flex-1">
-        <div className="flex relative flex-col dark:border-gray-500 border-l-[2px] mt-2 ml-1 pl-[35px]">
-          <p className="text-gray-800 font-normal dark:text-white">{message.text}</p>
+        <div className="flex relative flex-col dark:border-gray-500 border-l-[2px] mt-1 ml-1 pl-[35px]">
+          <p className="text-gray-800 font-normal dark:text-white">{text}</p>
           <div className="flex items-center space-x-4 mt-3 text-sm text-gray-500">
             <div className="flex gap-3 items-center">
               <span className="flex mx-xs text-gray-500 text-16 dark:text-gray-300">

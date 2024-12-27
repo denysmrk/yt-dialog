@@ -1,4 +1,4 @@
-import { UserIcon, MessageCircle, Dot, Minus, Ellipsis, MessageSquare } from 'lucide-react';
+import { Dot, Ellipsis, MessageSquare } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface Message {

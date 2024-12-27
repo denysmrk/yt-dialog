@@ -9,6 +9,8 @@
   "private": true,
   "dependencies": {
     "@craco/craco": "^7.1.0",
+    "@faker-js/faker": "^9.3.0",
+    "@multiavatar/multiavatar": "^1.0.7",
     "assert": "^2.1.0",
     "axios": "^1.7.9",
     "browserify-fs": "^1.0.0",

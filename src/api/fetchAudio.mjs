@@ -8,7 +8,7 @@ import { fileURLToPath } from 'url';
 // Получаем директорию текущего файла
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
+const publicDir = path.resolve(__dirname, '../../public');
 // Загрузка учетных данных из файла
 async function loadCredentials() {
   const data = await fs.readFile(path.join(__dirname, 'credentials.json'), 'utf8');
@@ -20,7 +20,7 @@ const SPREADSHEET_ID = '1gjU1aXqBoNEWKiOHAsQDc_o1g4LtIUKfXSCzKlO3134';
 const TEXT_SHEET_NAME = 'yt-text';
 
 // Функция для извлечения данных из Google Sheets
-async function fetchSheetData() {
+export async function fetchSheetData(firstElement) {
   const credentials = await loadCredentials();
   const auth = new google.auth.GoogleAuth({
     credentials,
@@ -37,16 +37,23 @@ async function fetchSheetData() {
   if (!rows || rows.length === 0) {
     throw new Error('No data found in the sheet.');
   }
-
-  // Преобразуем данные в объекты { text, id }
+  if (firstElement) {
+    return rows.slice(1, 2).map((row) => ({
+      id: row[0], // Предполагается, что ID в первом столбце
+      text: row[1], // Текст во втором столбце
+      title: row[2] || 'default_title', // Название озвучки в третьем столбце, или 'default_title'
+    }));
+  }
+  // Преобразуем данные в объекты { id, text, title }
   return rows.slice(1).map((row) => ({
     id: row[0], // Предполагается, что ID в первом столбце
     text: row[1], // Текст во втором столбце
+    title: row[2] || 'default_title', // Название озвучки в третьем столбце, или 'default_title'
   }));
 }
 
 // Генерация аудио
-async function generateAudio(text, id) {
+async function generateAudio(text, id, audioDir) {
   try {
     console.log(`Processing ID: ${id}, Text: "${text}"`);
     const client = await Client.connect('VoiceCloning-be/text-to-speech');
@@ -60,12 +67,10 @@ async function generateAudio(text, id) {
     const audioUrl = result.data[0]?.url;
     if (audioUrl) {
       const response = await axios.get(audioUrl, { responseType: 'arraybuffer' });
-      const audioPath = path.join(__dirname, 'audio', `${id}.mp3`);
-
-      // Создаем папку, если она не существует, и сохраняем файл
-      await fs.mkdir(path.dirname(audioPath), { recursive: true });
+      const audioPath = path.join(audioDir, `${id}.mp3`);
+      console.log(`Audio saved to: ${audioPath}`);
+      // Сохраняем файл
       await fs.writeFile(audioPath, response.data);
-
       console.log(`Audio saved to: ${audioPath}`);
     } else {
       console.error('Audio URL not found');
@@ -75,24 +80,33 @@ async function generateAudio(text, id) {
   }
 }
 
-async function saveDataToFile(data, filename) {
+// Сохранение данных в файл
+async function saveDataToFile(data, filePath) {
   try {
-    const filePath = path.join(__dirname, filename);
     await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf8');
     console.log(`Data saved to: ${filePath}`);
   } catch (error) {
-    console.error(`Error saving data to file: ${filename}`, error);
+    console.error(`Error saving data to file: ${filePath}`, error);
   }
 }
 
 // Основной процесс
 async function main() {
   try {
-    const data = await fetchSheetData(); // Получаем данные из Google Sheets
-    await saveDataToFile(data, 'sheetData.json'); // Сохраняем данные в JSON-файл
-    // Получаем данные из Google Sheets
-    for (const { text, id } of data) {
-      await generateAudio(text, id); // Генерируем аудио для каждого текста
+    const data = await fetchSheetData(false); // Получаем данные из Google Sheets
+    const titleDir = path.join(publicDir, data[0].title);
+    const audioDir = path.join(titleDir, 'audio');
+
+    await fs.mkdir(audioDir, { recursive: true });
+    const dataFilePath = path.join(titleDir, 'data.json');
+    await saveDataToFile(data, dataFilePath);
+    for (const { id, text } of data) {
+      // Создаём директорию для тайтла
+
+      // Сохраняем данные в файл в директории тайтла
+
+      // Генерируем аудио и сохраняем в директорию "audio"
+      await generateAudio(text, id, audioDir);
     }
   } catch (error) {
     console.error('Error in the main process:', error);

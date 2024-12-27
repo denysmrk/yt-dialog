@@ -3,63 +3,97 @@ import './App.css';
 import { motion } from 'framer-motion';
 import MessageCard from './components/message-card';
 import FirstCard from './components/first-card';
-import messages from '../src/api/sheetData.json';
-
+//         |||
+//         |||
+//       \ ||| /
+//         \ /
+//          ^
+const NAME_DIALOG = 'First-dialog'; // Назва діалогу
+//
+//
+//
+//
+//
 const App: React.FC = () => {
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(35);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [audioDurations, setAudioDurations] = useState<number[]>([]); // Храним длительности аудио
-  const [loading, setLoading] = useState(true); // Статус загрузки
-
-  // Функция для загрузки всех аудио и их длительности
-  const loadAllAudio = async () => {
-    const durations: number[] = [];
-    for (const message of messages) {
-      const audioFile = new Audio(`audio/${message.id}.mp3`);
-      await new Promise<void>((resolve) => {
-        audioFile.onloadedmetadata = () => {
-          durations.push(audioFile.duration * 1000); // В миллисекундах
-          resolve();
-        };
-      });
-    }
-    setAudioDurations(durations);
-    setLoading(false); // Завершаем загрузку
-  };
-
-  // Воспроизведение аудио
-  const playAudio = (messageId: string) => {
-    const audioFile = new Audio(`audio/${messageId}.mp3`);
-    audioFile.play();
-    return new Promise<number>((resolve) => {
-      audioFile.onended = () => {
-        resolve(audioFile.duration * 1000); // Возвращаем длительность в миллисекундах
-      };
-    });
-  };
+  const [audioDurations, setAudioDurations] = useState<number[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [messages, setMessages] = useState<any[]>([]);
 
   useEffect(() => {
-    loadAllAudio(); // Загружаем все аудио при монтировании
+    const filePath = `/${NAME_DIALOG}/data.json`;
+    const fetchMessages = async () => {
+      try {
+        console.log('trying');
+        const response = await fetch(filePath);
+        const data = await response.json();
+        console.log('data', data);
+
+        setMessages(data);
+        loadAllAudio(data);
+      } catch (error) {
+        console.error('Error loading JSON file:', error);
+        return null;
+      }
+    };
+
+    fetchMessages();
   }, []);
 
-  // Интервал для переключения карточек
+  const loadAllAudio = async (messages: any[]) => {
+    const durations: number[] = [];
+    for (const message of messages) {
+      try {
+        const audioFile = new Audio(`${NAME_DIALOG}/audio/${message.id}.mp3`);
+        await new Promise<void>((resolve, reject) => {
+          audioFile.onloadedmetadata = () => {
+            durations.push(audioFile.duration * 1000);
+            resolve();
+          };
+          audioFile.onerror = () => reject(`Ошибка загрузки: ${message.id}.mp3`);
+        });
+      } catch (error) {
+        console.error(error);
+        durations.push(0);
+      }
+    }
+    setAudioDurations(durations);
+    setLoading(false);
+  };
+
   useEffect(() => {
-    if (!isPlaying || loading) return; // Если в процессе загрузки или не воспроизводим
+    if (!isPlaying || loading) return;
+
+    if (currentIndex >= messages.length) {
+      setCurrentIndex(0);
+      setIsPlaying(false); // Останавливаем воспроизведение
+      console.log('Воспроизведение завершено');
+      return;
+    }
 
     const currentMessage = messages[currentIndex];
     console.log(`Текущий индекс: ${currentIndex}, Текущее сообщение: ${currentMessage.id}`);
 
     const duration = audioDurations[currentIndex];
-    const audioFile = new Audio(`audio/${currentMessage.id}.mp3`);
+    const audioFile = new Audio(
+      `${NAME_DIALOG}/audio/${currentMessage.id}.mp3?timestamp=${Date.now()}`,
+    );
+
     setTimeout(() => {
       audioFile.play();
-    }, 1000);
-    // Синхронизация переключения компонента с аудио
-    setTimeout(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % messages.length); // Переключаем на следующий индекс
-    }, duration);
-  }, [currentIndex, isPlaying]);
+    }, 1250);
 
+    const timeoutDuration = currentIndex === 0 ? duration + 1500 : duration;
+
+    const timeout = setTimeout(() => {
+      setCurrentIndex((prevIndex) => prevIndex + 1); // Переход к следующему сообщению
+    }, timeoutDuration);
+
+    return () => clearTimeout(timeout); // Чистим таймер при обновлении эффекта
+  }, [currentIndex, isPlaying, loading]);
+
+  useEffect(() => {}, [currentIndex]);
   const savedTheme = localStorage.getItem('theme');
   const htmlElement = document.documentElement;
 
@@ -116,8 +150,8 @@ const App: React.FC = () => {
           initial={{ x: 0 }}
           animate={{ x: -currentIndex * 100 + '%' }} // Сдвиг карточек влево
           transition={{
-            ease: 'easeInOut', // Используем плавный easing
-            duration: 1, // Устанавливаем продолжительность анимации
+            ease: 'easeInOut', // Плавный easing
+            duration: 1, // Длительность анимации
           }}>
           {messages.map((message, index) => (
             <div key={index} className="w-full flex-shrink-0 content-center pl-[10vw]">
